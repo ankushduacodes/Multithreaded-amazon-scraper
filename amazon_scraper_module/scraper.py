@@ -2,6 +2,7 @@ import re
 import requests
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 
 base_url = "https://www.amazon.com"
 
@@ -24,7 +25,7 @@ class Search():
             'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
         }
         self.product_dict_list = []
-        self.pages_content_list = []
+        self.pages_list = []
 
     def prepare_url(self, search_word):
 
@@ -59,9 +60,62 @@ class Search():
         soup = BeautifulSoup(content, "html5lib")
         next_page = soup.find("li", class_="a-last")
         try:
-            return next.a.get('href')
+            next_page_link = next.a.get('href')
+            del(soup)
+            return next_page_link
         except AttributeError:
-            return None
+            del(soup)
+            return ''
+        
+    def get_product_url(self, product):
+        pass
+    
+    def get_product_title(self, product):
+        pass
+
+    def get_product_price(self, product):
+        pass
+    
+    def get_product_image_url(self, product):
+        pass
+    
+    def get_product_rating(self, product):
+        pass
+    
+    def get_product_review_num(self, product):
+        pass
+    
+    def get_product_bestseller_status(self, product):
+        pass
+    
+    def get_product_prime_status(self, product):
+        pass
+    
+    def get_product_info(self, product):
+        product_dict = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            product_dict['url'] = executor.submit(self.get_product_url, product).result()
+            product_dict['title'] = executor.submit(self.get_product_title, product).result()
+            product_dict['price'] = executor.submit(self.get_product_price, product).result()
+            product_dict['img_url'] = executor.submit(self.get_product_image_url, product).result()
+            product_dict['rating'] = executor.submit(self.get_product_rating, product).result()
+            product_dict['num_of_reviews'] = executor.submit(self.get_product_review_num, product).result()
+            product_dict['bestseller'] = executor.submit(self.get_product_bestseller_status, product).result()
+            product_dict['prime'] = executor.submit(self.get_product_prime_status, product).result()
+        return product_dict
+
+    def get_products(self, content):
+
+        soup = BeautifulSoup(content, "html5lib")
+        regexp = "sg-col-20-of-24 s-result-item s-asin sg-col-0-of-12 sg-col-28-of-32 sg-col-16-of-20 sg-col sg-col-32-of-36 sg-col-12-of-16 sg-col-24-of-28".replace(
+            ' ', '\s+')
+        classes = re.compile(regexp)
+        product_list = soup.find_all('div', attrs={'class': classes})
+
+        with ThreadPoolExecutor() as executor:
+            result_list = list(executor.map(self.get_product_info, product_list))
+        
+        return (result_list)
 
     def search_result(self, search_word):
 
@@ -70,11 +124,13 @@ class Search():
         while (search_url):
 
             response_content = self.get_page_content(search_url)
-            self.pages_content_list.append(response_content)
+            self.page_list.append(response_content)
             next_page_url = self.get_next_page_url(response_content)
 
             if next_page_url:
                 search_url = base_url + next_page_url
 
             else:
-                search_url = None
+                search_url = next_page_url
+                
+            all_products = 
