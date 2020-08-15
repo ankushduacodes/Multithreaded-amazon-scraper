@@ -124,7 +124,7 @@ class Search():
         while (search_url):
 
             response_content = self.get_page_content(search_url)
-            self.page_list.append(response_content)
+            self.pages_list.append(response_content)
             next_page_url = self.get_next_page_url(response_content)
 
             if next_page_url:
@@ -134,7 +134,11 @@ class Search():
                 search_url = next_page_url
                 
         all_products = {}
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            for i in range(len(page_list)):
+        with ThreadPoolExecutor() as executor:
+            for i in range(len(self.pages_list)):
                 key = 'page ' + str(i)
-                all_products[key] = executor.submit(self.get_products, pages[i]).result()
+                all_products[key] = executor.submit(self.get_products, self.pages_list[i]).result()
+                
+if __name__ == "__main__":
+    am = Search()
+    am.search_result('men sunglasses')
