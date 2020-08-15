@@ -55,9 +55,9 @@ class Search():
 
         return response.text
 
-    def get_next_page_url(self, content):
+    def get_next_page_url(self, page_content):
 
-        soup = BeautifulSoup(content, "html5lib")
+        soup = BeautifulSoup(page_content, "html5lib")
         next_page = soup.find("li", class_="a-last")
         try:
             next_page_link = next.a.get('href')
@@ -104,9 +104,9 @@ class Search():
             product_dict['prime'] = executor.submit(self.get_product_prime_status, product).result()
         return product_dict
 
-    def get_products(self, content):
+    def get_products(self, page_content):
 
-        soup = BeautifulSoup(content, "html5lib")
+        soup = BeautifulSoup(page_content, "html5lib")
         regexp = "sg-col-20-of-24 s-result-item s-asin sg-col-0-of-12 sg-col-28-of-32 sg-col-16-of-20 sg-col sg-col-32-of-36 sg-col-12-of-16 sg-col-24-of-28".replace(
             ' ', '\s+')
         classes = re.compile(regexp)
@@ -133,4 +133,8 @@ class Search():
             else:
                 search_url = next_page_url
                 
-            all_products = 
+        all_products = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for i in range(len(page_list)):
+                key = 'page ' + str(i)
+                all_products[key] = executor.submit(self.get_products, pages[i]).result()
