@@ -138,7 +138,3 @@ class Search():
             for i in range(len(self.pages_list)):
                 key = 'page ' + str(i)
                 all_products[key] = executor.submit(self.get_products, self.pages_list[i]).result()
-                
-if __name__ == "__main__":
-    am = Search()
-    am.search_result('men sunglasses')
