@@ -5,8 +5,9 @@ from bs4 import BeautifulSoup
 
 base_url = "https://www.amazon.com"
 
+
 class Search():
-    
+
     def __init__(self):
         self.session = requests.Session()
         self.headers = {
@@ -24,36 +25,56 @@ class Search():
         }
         self.product_dict_list = []
         self.pages_content_list = []
-    
-    
+
     def prepare_url(self, search_word):
-        
+
         return urljoin(base_url, ("/s?k=%s" % (search_word.replace(' ', '+'))))
-    
-    
+
     def get_request(self, url):
         response = self.session.get(url, headers=self.headers)
         if response.status_code != 200:
-            raise ConnectionError("Error occured, status code:{response.status_code}")
+            raise ConnectionError(
+                "Error occured, status code:{response.status_code}")
         return response
-    
-    
+
     def get_page_content(self, search_url):
-        pass
-    
-    
+
+        valid_page = True
+        try:
+            response = self.get_request(search_url)
+
+        except requests.exceptions.SSLError:
+            valid_page = False
+
+        except ConnectionError:
+            valid_page = False
+
+        if not valid_page:
+            raise ValueError("No valid page was found")
+
+        return response.text
+
+    def get_next_page_url(self, content):
+
+        soup = BeautifulSoup(content, "html5lib")
+        next_page = soup.find("li", class_="a-last")
+        try:
+            return next.a.get('href')
+        except AttributeError:
+            return None
+
     def search_result(self, search_word):
-        
+
         search_url = self.prepare_url(search_word)
-        
+
         while (search_url):
-            
-            response = self.get_page_content(search_url)
-            self.pages_content_list.append(response.content)
-            next_page_url = self.get_next_page_url(response.content)
-            
+
+            response_content = self.get_page_content(search_url)
+            self.pages_content_list.append(response_content)
+            next_page_url = self.get_next_page_url(response_content)
+
             if next_page_url:
                 search_url = base_url + next_page_url
-            
+
             else:
                 search_url = None
