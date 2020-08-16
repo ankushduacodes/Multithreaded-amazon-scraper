@@ -2,8 +2,6 @@ class Product(object):
 
     def __init__(self, url='', title='', price=None, img_url='', rating_stars='', num_of_reviews=None, bestseller=False, prime=False):
 
-        _id = count(0)
-        self.id = next(self._id)
         self.url = url
         self.title = title
         self.price = price

@@ -1,6 +1,6 @@
 import re
 import requests
-import Product
+from product import Product
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 base_url = "https://www.amazon.com"
 
 
-class Search(object):
+class Scraper(object):
 
     def __init__(self):
         self.session = requests.Session()
@@ -46,12 +46,6 @@ class Search(object):
         if "We're sorry. The Web address you entered is not a functioning page on our site." in page_content:
             valid_page = False
         elif "Try checking your spelling or use more general terms" in page_content:
-            valid_page = False
-        elif "Sign in for the best experience" in html_content:
-            valid_page = False
-        elif "The request could not be satisfied." in html_content:
-            valid_page = False
-        elif "Robot Check" in html_content:
             valid_page = False
         else:
             valid_page = True
@@ -145,13 +139,13 @@ class Search(object):
 
         return (result_list)
 
-    def search_result(self, search_word):
+    def search(self, search_word):
 
         search_url = self.prepare_url(search_word)
         response_content = self.get_page_content(search_url)
         self.page_count = self.get_page_count(response_content)
         if self.page_count <= 1:
             self.get_products(response_content)
-            return product_obj_list
+            return self.product_obj_list
         else:
             pass
