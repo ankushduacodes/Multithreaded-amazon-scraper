@@ -1,4 +1,5 @@
 import re
+import time
 import requests
 from product import Product
 from urllib.parse import urljoin
@@ -19,7 +20,7 @@ class Scraper(object):
             'cache-control': 'no-cache',
             'dnt': '1',
             'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
             'sec-fetch-site': 'none',
             'sec-fetch-mode': 'navigate',
@@ -47,6 +48,8 @@ class Scraper(object):
             valid_page = False
         elif "Try checking your spelling or use more general terms" in page_content:
             valid_page = False
+        elif "Sorry, we just need to make sure you're not a robot." in page_content:
+            valid_page = False
         else:
             valid_page = True
         return valid_page
@@ -65,7 +68,8 @@ class Scraper(object):
             valid_page = False
 
         if not valid_page:
-            raise ValueError("No valid page was found")
+            raise ValueError(
+                "No valid page was found or validate capcha page was given")
 
         return response.text
 
@@ -104,9 +108,12 @@ class Scraper(object):
 
     def get_product_review_count(self, product):
         try:
-            review_count = product.find('span', attrs={'class': 'a-size-base'})
+            review_count = product.find(
+                'span', attrs={'class': 'a-size-base', 'dir': 'auto'})
             return int(review_count.text.strip().replace(',', ''))
         except AttributeError:
+            return None
+        except ValueError:
             return None
 
     def get_product_bestseller_status(self, product):
@@ -126,7 +133,7 @@ class Scraper(object):
         product_obj.url = self.get_product_url(product)
         product_obj.title = self.get_product_title(product)
         product_obj.price = self.get_product_price(product)
-        product_obj.image_url = self.get_product_image_url(product)
+        product_obj.img_url = self.get_product_image_url(product)
         product_obj.rating_stars = self.get_product_rating(product)
         product_obj.review_count = self.get_product_review_count(product)
         product_obj.bestseller = self.get_product_bestseller_status(product)
@@ -139,47 +146,56 @@ class Scraper(object):
         try:
             pagination = soup.find_all(
                 'li', attrs={'class': ['a-normal', 'a-disabled', 'a-last']})
-            return int(list(pagination)[-2].text)
+            return int(pagination[-2].text)
         except IndexError:
             return 1
 
-    def prepare_page_list(self, page_count, search_url):
-        for i in range(1, page_count + 1):
-            page_list.append(search_url + '&page=' + str(i))
+    def prepare_page_list(self, search_url):
+        for i in range(1, self.page_count + 1):
+            self.page_list.append(search_url + '&page=' + str(i))
 
     def get_products(self, page_content):
 
         soup = BeautifulSoup(page_content, "html5lib")
         product_list = soup.find_all(
             'div', attrs={'data-component-type': 's-search-result'})
-
-        with ThreadPoolExecutor() as executor:
-            result_list = list(executor.map(
-                self.get_product_info, product_list))
-
-        return (result_list)
+        
+        result_list = list(map(self.get_product_info, product_list))
+        return result_list
 
     def search(self, search_word):
 
         search_url = self.prepare_url(search_word)
         response_content = self.get_page_content(search_url)
+
         self.page_count = self.get_page_count(response_content)
         if self.page_count <= 1:
             self.get_products(response_content)
-            return self.product_obj_list
+            return {'page 1': self.product_obj_list}
         else:
-            pass
+            self.prepare_page_list(search_url)
+            with ThreadPoolExecutor() as executor:
+                executor.map(
+                    self.get_products, list(executor.map(self.get_page_content, self.page_list)))
+            return self.product_obj_list
 
 
 if __name__ == "__main__":
+
     amazon = Scraper()
-    list1 = amazon.search('attterr')
+    start = time.perf_counter()
+    list1 = amazon.search('toaster')
+    stop = time.perf_counter()
+    print(len(list1))
     for product in list1:
-        print(product.title)
         print(product.url)
+        print(product.title)
         print(product.price)
-        print(product.image_url)
+        print(product.img_url)
         print(product.rating_stars)
         print(product.review_count)
         print(product.bestseller)
         print(product.prime)
+        print()
+        print()
+    print(stop - start)
