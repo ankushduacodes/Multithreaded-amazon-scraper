@@ -78,26 +78,48 @@ class Scraper(object):
     def get_product_title(self, product):
         regexp = "a-size-medium a-color-base a-text-normal".replace(' ', '\s+')
         classes = re.compile(regexp)
-        title = product.find('span', attrs={'class': classes})
-        return title.text.strip()
+        try:
+            title = product.find('span', attrs={'class': classes})
+            return title.text.strip()
+        except AttributeError:
+            return ''
 
     def get_product_price(self, product):
-        pass
+        try:
+            price = product.find('span', attrs={'class': 'a-offscreen'})
+            return float(price.text.strip('$').replace(',', ''))
+        except AttributeError:
+            return None
 
     def get_product_image_url(self, product):
-        pass
+        image_tag = product.find('img')
+        return image_tag.get('src')
 
     def get_product_rating(self, product):
-        pass
+        try:
+            rating = re.search(r'(\d.\d) out of 5', str(product))
+            return float(rating.group()[:3])
+        except AttributeError:
+            return None
 
-    def get_product_review_num(self, product):
-        pass
+    def get_product_review_count(self, product):
+        try:
+            review_count = product.find('span', attrs={'class': 'a-size-base'})
+            return int(review_count.text.strip().replace(',', ''))
+        except AttributeError:
+            return None
 
     def get_product_bestseller_status(self, product):
-        pass
+
+        bestseller_status = product.find(
+            'span', attrs={'class': 'a-badge-text'})
+        return bool(bestseller_status)
 
     def get_product_prime_status(self, product):
-        pass
+        regexp = "a-icon a-icon-prime a-icon-medium".replace(' ', '\s+')
+        classes = re.compile(regexp)
+        prime_status = product.find('i', attrs={'class': classes})
+        return bool(prime_status)
 
     def get_product_info(self, product):
         product_obj = Product()
@@ -106,7 +128,7 @@ class Scraper(object):
         product_obj.price = self.get_product_price(product)
         product_obj.image_url = self.get_product_image_url(product)
         product_obj.rating_stars = self.get_product_rating(product)
-        product_obj.num_of_reviews = self.get_product_review_num(product)
+        product_obj.review_count = self.get_product_review_count(product)
         product_obj.bestseller = self.get_product_bestseller_status(product)
         product_obj.prime = self.get_product_prime_status(product)
 
@@ -128,10 +150,8 @@ class Scraper(object):
     def get_products(self, page_content):
 
         soup = BeautifulSoup(page_content, "html5lib")
-        regexp = "sg-col-20-of-24 s-result-item s-asin sg-col-0-of-12 sg-col-28-of-32 sg-col-16-of-20 sg-col sg-col-32-of-36 sg-col-12-of-16 sg-col-24-of-28".replace(
-            ' ', '\s+')
-        classes = re.compile(regexp)
-        product_list = soup.find_all('div', class_=[classes, 'AdHolder'])
+        product_list = soup.find_all(
+            'div', attrs={'data-component-type': 's-search-result'})
 
         with ThreadPoolExecutor() as executor:
             result_list = list(executor.map(
@@ -149,3 +169,17 @@ class Scraper(object):
             return self.product_obj_list
         else:
             pass
+
+
+if __name__ == "__main__":
+    amazon = Scraper()
+    list1 = amazon.search('attterr')
+    for product in list1:
+        print(product.title)
+        print(product.url)
+        print(product.price)
+        print(product.image_url)
+        print(product.rating_stars)
+        print(product.review_count)
+        print(product.bestseller)
+        print(product.prime)
