@@ -68,10 +68,10 @@ class Scraper(object):
         trail = 0
         max_retries = 5
         while (trail < max_retries):
-            
+
             response = self.get_request(search_url)
             valid_page = self.check_page_validity(response.text)
-            
+
             if valid_page:
                 break
 
@@ -80,8 +80,8 @@ class Scraper(object):
             trail += 1
 
         if not valid_page:
-            print("No valid page was found or validate capcha page was given")
-            sys.exit()
+            raise ValueError(
+                "No valid page was found or validate capcha page was given")
 
         return response.text
 
@@ -129,10 +129,12 @@ class Scraper(object):
             return None
 
     def get_product_bestseller_status(self, product):
-
-        bestseller_status = product.find(
-            'span', attrs={'class': 'a-badge-text'})
-        return bool(bestseller_status)
+        try:
+            bestseller_status = product.find(
+                'span', attrs={'class': 'a-badge-text'})
+            return bestseller_status == 'Best Seller'
+        except AttributeError:
+            return False
 
     def get_product_prime_status(self, product):
         regexp = "a-icon a-icon-prime a-icon-medium".replace(' ', '\s+')
@@ -187,10 +189,28 @@ class Scraper(object):
         self.page_count = self.get_page_count(response_content)
         if self.page_count <= 1:
             self.get_products(response_content)
-            return self.product_obj_list
+            output_file(self.product_obj_list)
+        else:
+            self.prepare_page_list(search_url)
+            with ThreadPoolExecutor() as executor:
+                executor.map(self.wrapper_get_prod, self.page_list)
+            output_file(self.product_obj_list)
 
-        self.prepare_page_list(search_url)
-        with ThreadPoolExecutor() as executor:
-            executor.map(self.wrapper_get_prod, self.page_list)
 
-        return self.product_obj_list
+def output_file(obj_list):
+    data = []
+    for obj in obj_list:
+        data.append(obj.to_json())
+    data = ','.join(data)
+    string_data = '[' + data + ']'
+    with open('products.json', mode='w') as f:
+        f.write(string_data)
+
+
+if __name__ == "__main__":
+
+    amazon = Scraper()
+    start = time.perf_counter()
+    amazon.search('toaster')
+    stop = time.perf_counter()
+    print(stop - start)

@@ -1,3 +1,5 @@
+import json
+
 class Product(object):
 
     def __init__(self, url='', title='', price=None, img_url='', rating_stars='', review_count=None, bestseller=False, prime=False):
@@ -10,3 +12,7 @@ class Product(object):
         self.review_count = review_count
         self.bestseller = bestseller
         self.prime = prime
+    
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
+    
