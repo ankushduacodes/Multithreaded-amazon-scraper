@@ -1,2 +1,13 @@
 # amazon-search-scraper
-Scraps the search results and generates a JSON file to store the information(like title, price, rating stars... etc) about those results.
+
+# Description
+This package allows you to search and scrape for products on [Amazon](https://www.amazon.com) and extract some useful information (price, ratings, number of comments).
+
+# Requirements
+- Python 3
+- pip3
+
+# Dependencies
+```bash
+pip3 install -r requirements.txt
+```
