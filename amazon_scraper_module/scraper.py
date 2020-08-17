@@ -112,10 +112,10 @@ class Scraper(object):
         """
 
         valid_page = True
-        trail = 0
+        trial = 0
         # if a page does not get a valid response it retries(5 times)
         max_retries = 5
-        while (trail < max_retries):
+        while (trial < max_retries):
 
             response = self.get_request(search_url)
             valid_page = self.check_page_validity(response.text)
@@ -125,7 +125,7 @@ class Scraper(object):
 
             print("Something went wrong, retrying...")
             time.sleep(1)
-            trail += 1
+            trial += 1
 
         if not valid_page:
             raise ValueError(
@@ -134,7 +134,7 @@ class Scraper(object):
         return response.text
 
     def get_product_url(self, product):
-        """Reterives and returns product url
+        """Retrieves and returns product url
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -149,7 +149,7 @@ class Scraper(object):
         return base_url + product_url
 
     def get_product_asin(self, product):
-        """ Reterives and returns Amazon Standard Identification Number (asin) of a product
+        """ Retrieves and returns Amazon Standard Identification Number (asin) of a product
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -161,7 +161,7 @@ class Scraper(object):
         return product.get('data-asin')
 
     def get_product_title(self, product):
-        """Reterives and returns product title
+        """Retrieves and returns product title
         Args:
             product (str): higher level html tags of a product containing all the information about a product
 
@@ -175,14 +175,14 @@ class Scraper(object):
             title = product.find('span', attrs={'class': classes})
             return title.text.strip()
 
-        # AttributeError occurs when no title is found and we get back None
-        # in that case when we try to do title.text it raises AttributeError
+        # AttributeError occurs when no title is found and we get back None 
+        # in that case when we try to do title.text it raises AttributeError 
         # because Nonetype object does not have text attribute
         except AttributeError:
             return ''
 
     def get_product_price(self, product):
-        """Reterives and returns product price
+        """Retrieves and returns product price
         Args:
             product (str): higher level html tags of a product containing all the information about a product
 
@@ -207,7 +207,7 @@ class Scraper(object):
             return None
 
     def get_product_image_url(self, product):
-        """Reterives and returns product image url
+        """Retrieves and returns product image url
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -220,7 +220,7 @@ class Scraper(object):
         return image_tag.get('src')
 
     def get_product_rating(self, product):
-        """Reterives and returns product rating
+        """Retrieves and returns product rating
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -246,7 +246,7 @@ class Scraper(object):
             return None
 
     def get_product_review_count(self, product):
-        """Reterives and returns number of reviews a product has
+        """Retrieves and returns number of reviews a product has
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -273,7 +273,7 @@ class Scraper(object):
             return None
 
     def get_product_bestseller_status(self, product):
-        """Reterives and returns if product is best-seller or not
+        """Retrieves and returns if product is best-seller or not
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
@@ -294,7 +294,7 @@ class Scraper(object):
             return False
 
     def get_product_prime_status(self, product):
-        """Reterives and returns if product is supported by Amazon prime
+        """Retrieves and returns if product is supported by Amazon prime
 
         Args:
             product (str): higher level html tags of a product containing all the information about a product
