@@ -69,15 +69,14 @@ class Scraper(object):
         """
         try:
             response = self.session.get(url, headers=self.headers)
-
-        #  returns None if requests.exceptions.ConnectionError occurs
-        except requests.exceptions.ConnectionError as e:
+            if response.status_code != 200:
+                raise requests.HTTPError(
+                    "Error occured, status code:{response.status_code}")
+        #  returns None if requests.exceptions.ConnectionError or requests.HTTPError occurs
+        except (requests.exceptions.ConnectionError, requests.HTTPError) as e:
             print(e + "while connecting to" + url)
             return None
 
-        if response.status_code != 200:
-            raise requests.HTTPError(
-                "Error occured, status code:{response.status_code}")
         return response
 
     def check_page_validity(self, page_content):
@@ -133,7 +132,8 @@ class Scraper(object):
             trial += 1
 
         if not valid_page:
-            print("Even after retrying, no valid page was found on this thread, terminating thread...")
+            print(
+                "Even after retrying, no valid page was found on this thread, terminating thread...")
             return None
 
         return response.text
