@@ -8,10 +8,11 @@ import sys
 import time
 import uuid
 import requests
-from .product import Product
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor
+
+from .product import Product
 
 
 base_url = "https://www.amazon.com"
@@ -61,7 +62,7 @@ class Scraper(object):
         Raises:
             requests.exceptions.ConnectionError: Raised when there is no internet connection while placing GET request
 
-            requests.HTTPError: Raised when Page not found or bad-gateway(eg. 404)
+            requests.HTTPError: Raised when response stattus code is not 200
 
         Returns:
             response: Whatever response was sent back by the server
@@ -175,8 +176,8 @@ class Scraper(object):
             title = product.find('span', attrs={'class': classes})
             return title.text.strip()
 
-        # AttributeError occurs when no title is found and we get back None 
-        # in that case when we try to do title.text it raises AttributeError 
+        # AttributeError occurs when no title is found and we get back None
+        # in that case when we try to do title.text it raises AttributeError
         # because Nonetype object does not have text attribute
         except AttributeError:
             return ''
@@ -410,16 +411,17 @@ class Scraper(object):
 
         self.page_count = self.get_page_count(page_content)
         # if page count is 1, then there is no need to prepare page list therefore the condition and
-        # we just parse the content recieved above and generate a json file
+        # we just parse the content recieved above
         if self.page_count <= 1:
             self.get_products(page_content)
-            self.generate_output_file()
+
         else:
             # if page count is more than 1, then we prepare a page list and start a thread at each page url
-            # and generate a json output file
             self.prepare_page_list(search_url)
             # creating threads at each page in page_list
             with ThreadPoolExecutor() as executor:
                 for page in self.page_list:
                     executor.submit(self.wrapper_get_prod, page)
-            self.generate_output_file()
+
+        # generate a json output file
+        self.generate_output_file()
