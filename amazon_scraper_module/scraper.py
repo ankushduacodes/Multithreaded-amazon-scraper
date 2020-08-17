@@ -401,9 +401,9 @@ class Scraper(object):
             products_json_list.append(obj.to_json())
 
         products_json_list = ','.join(products_json_list)
-        string_data = '[' + data + ']'
+        json_data = '[' + products_json_list + ']'
         with open('./' + filename, mode='w') as f:
-            f.write(string_data)
+            f.write(json_data)
 
     def search(self, search_word):
         """Initializies that search and puts together the whole class
