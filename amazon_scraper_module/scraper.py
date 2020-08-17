@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 import requests
 from product import Product
@@ -35,8 +36,15 @@ class Scraper(object):
         return urljoin(base_url, ("/s?k=%s" % (search_word.replace(' ', '+'))))
 
     def get_request(self, url):
+        try:
+            response = self.session.get(url, headers=self.headers)
+        except requests.exceptions.SSLError as e:
+            print(e)
+            sys.exit()
+        except requests.exceptions.ConnectionError as e:
+            print(e)
+            sys.exit()
 
-        response = self.session.get(url, headers=self.headers)
         if response.status_code != 200:
             raise ConnectionError(
                 "Error occured, status code:{response.status_code}")
@@ -57,19 +65,23 @@ class Scraper(object):
     def get_page_content(self, search_url):
 
         valid_page = True
-        try:
+        trail = 0
+        max_retries = 5
+        while (trail < max_retries):
+            
             response = self.get_request(search_url)
             valid_page = self.check_page_validity(response.text)
+            
+            if valid_page:
+                break
 
-        except requests.exceptions.SSLError:
-            valid_page = False
-
-        except ConnectionError:
-            valid_page = False
+            print("Something went wrong, retrying...")
+            time.sleep(1)
+            trail += 1
 
         if not valid_page:
-            raise ValueError(
-                "No valid page was found or validate capcha page was given")
+            print("No valid page was found or validate capcha page was given")
+            sys.exit()
 
         return response.text
 
@@ -80,7 +92,7 @@ class Scraper(object):
         return base_url + product_url
 
     def get_product_title(self, product):
-        regexp = "a-size-medium a-color-base a-text-normal".replace(' ', '\s+')
+        regexp = "a-color-base a-text-normal".replace(' ', '\s+')
         classes = re.compile(regexp)
         try:
             title = product.find('span', attrs={'class': classes})
@@ -159,9 +171,13 @@ class Scraper(object):
         soup = BeautifulSoup(page_content, "html5lib")
         product_list = soup.find_all(
             'div', attrs={'data-component-type': 's-search-result'})
-        
+
         result_list = list(map(self.get_product_info, product_list))
         return result_list
+
+    def wrapper_get_prod(self, page_url):
+        response_content = self.get_page_content(page_url)
+        self.get_products(response_content)
 
     def search(self, search_word):
 
@@ -171,31 +187,10 @@ class Scraper(object):
         self.page_count = self.get_page_count(response_content)
         if self.page_count <= 1:
             self.get_products(response_content)
-            return {'page 1': self.product_obj_list}
-        else:
-            self.prepare_page_list(search_url)
-            with ThreadPoolExecutor() as executor:
-                executor.map(
-                    self.get_products, list(executor.map(self.get_page_content, self.page_list)))
             return self.product_obj_list
 
+        self.prepare_page_list(search_url)
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.wrapper_get_prod, self.page_list)
 
-if __name__ == "__main__":
-
-    amazon = Scraper()
-    start = time.perf_counter()
-    list1 = amazon.search('toaster')
-    stop = time.perf_counter()
-    print(len(list1))
-    for product in list1:
-        print(product.url)
-        print(product.title)
-        print(product.price)
-        print(product.img_url)
-        print(product.rating_stars)
-        print(product.review_count)
-        print(product.bestseller)
-        print(product.prime)
-        print()
-        print()
-    print(stop - start)
+        return self.product_obj_list
