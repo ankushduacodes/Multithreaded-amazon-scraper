@@ -2,9 +2,10 @@ import json
 
 class Product(object):
 
-    def __init__(self, url='', title='', price=None, img_url='', rating_stars='', review_count=None, bestseller=False, prime=False):
+    def __init__(self, url='', asin='', title='', price=None, img_url='', rating_stars='', review_count=None, bestseller=False, prime=False):
 
         self.url = url
+        self.asin = asin
         self.title = title
         self.price = price
         self.img_url = img_url
@@ -14,5 +15,6 @@ class Product(object):
         self.prime = prime
     
     def to_json(self):
+        # convert object to json string format
         return json.dumps(self, default=lambda o: o.__dict__)
     
