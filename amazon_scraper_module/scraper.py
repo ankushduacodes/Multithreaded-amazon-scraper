@@ -109,7 +109,7 @@ class Scraper(object):
             ValueError: raised if no valid page is found
 
         Returns:
-            response.text or None: returns html response encoded in unicode or returns None if get_requests function returns None
+            response.text or None: returns html response encoded in unicode or returns None if get_requests function or if the page is not valid even after retries
         """
 
         valid_page = True
@@ -128,13 +128,13 @@ class Scraper(object):
             if valid_page:
                 break
 
-            print("Something went wrong, retrying...")
-            time.sleep(1)
+            print("No valid page was found, retrying in 3 seconds...")
+            time.sleep(3)
             trial += 1
 
         if not valid_page:
-            raise ValueError(
-                "No valid page was found or validate capcha page was given")
+            print("Even after retrying, no valid page was found on this thread, terminating thread...")
+            return None
 
         return response.text
 
