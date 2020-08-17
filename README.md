@@ -51,4 +51,5 @@ Output is provided in the from of a json file, please refer to the [products.jso
 ## todo
 - [ ] Write Unit tests
 - [ ] Implement functionality of sending requests from various differnt proxies
-- [ ] Items like Books and DVDs may have multiple prices, Extact all the prices and catagorize them into a price dictionary
+- [ ] Items like Books and DVDs may have multiple prices, Extact all the prices and categorize them into a price dictionary
+- [ ] Add a better way to convert list of objects into json
