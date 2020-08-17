@@ -180,10 +180,10 @@ class Scraper(object):
             title = product.find('span', attrs={'class': classes})
             return title.text.strip()
 
-        # AttributeError occurs when no title is found and we get back None
-        # in that case when we try to do title.text it raises AttributeError
-        # because Nonetype object does not have text attribute
         except AttributeError:
+            """AttributeError occurs when no title is found and we get back None
+            in that case when we try to do title.text it raises AttributeError
+            because Nonetype object does not have text attribute"""
             return ''
 
     def get_product_price(self, product):
@@ -199,16 +199,15 @@ class Scraper(object):
             price = product.find('span', attrs={'class': 'a-offscreen'})
             return float(price.text.strip('$').replace(',', ''))
 
-        # AttributeError occurs when no price is found and we get back None
-        # in that case when we try to do price.text it raises AttributeError
-        # because Nonetype object does not have text attribute
+        except (AttributeError, ValueError):
+            """AttributeError occurs when no price is found and we get back None
+            in that case when we try to do price.text it raises AttributeError
+            because Nonetype object does not have text attribute"""
 
-        # ValueError is raised while converting price.text.strip() into float
-        # of that value and that value for some reason is not convertible to
-        # float
-        except AttributeError:
-            return None
-        except ValueError:
+            """ValueError is raised while converting price.text.strip() into float
+            of that value and that value for some reason is not convertible to
+            float"""
+
             return None
 
     def get_product_image_url(self, product):
@@ -238,16 +237,15 @@ class Scraper(object):
             rating = re.search(r'(\d.\d) out of 5', str(product))
             return float(rating.group(1))
 
-        # AttributeError occurs when no rating is found and we get back None
-        # in that case when we try to do rating.text it raises AttributeError
-        # because Nonetype object does not have text attribute
+        except (AttributeError, ValueError):
+            """AttributeError occurs when no rating is found and we get back None
+            in that case when we try to do rating.text it raises AttributeError
+            because Nonetype object does not have text attribute"""
 
-        # ValueError is raised while converting rating.group(1) into float
-        # of that value and that value for some reason is not convertible to
-        # float
-        except AttributeError:
-            return None
-        except ValueError:
+            """ValueError is raised while converting rating.group(1) into float
+            of that value and that value for some reason is not convertible to
+            float"""
+
             return None
 
     def get_product_review_count(self, product):
@@ -265,16 +263,15 @@ class Scraper(object):
                 'span', attrs={'class': 'a-size-base', 'dir': 'auto'})
             return int(review_count.text.strip().replace(',', ''))
 
-        # AttributeError occurs when no review_count is found and we get back None
-        # in that case when we try to do review_count.text it raises AttributeError
-        # because Nonetype object does not have text attribute
+        except (AttributeError, ValueError):
+            """AttributeError occurs when no review_count is found and we get back None
+            in that case when we try to do review_count.text it raises AttributeError
+            because Nonetype object does not have text attribute"""
 
-        # ValueError is raised while converting review_count.text.strip() into
-        # int of that value and that value for some reason is not convertible to
-        # int
-        except AttributeError:
-            return None
-        except ValueError:
+            """ValueError is raised while converting review_count.text.strip() into
+            int of that value and that value for some reason is not convertible to
+            int"""
+
             return None
 
     def get_product_bestseller_status(self, product):
@@ -292,10 +289,11 @@ class Scraper(object):
                 'span', attrs={'class': 'a-badge-text'})
             return bestseller_status.text.strip() == 'Best Seller'
 
-        # AttributeError occurs when no bestseller_status is found and we get back None
-        # in that case when we try to do bestseller_status.text it raises AttributeError
-        # because Nonetype object does not have text attribute
         except AttributeError:
+            """AttributeError occurs when no bestseller_status is found and we get back None
+            in that case when we try to do bestseller_status.text it raises AttributeError
+            because Nonetype object does not have text attribute
+            """
             return False
 
     def get_product_prime_status(self, product):
@@ -378,7 +376,7 @@ class Scraper(object):
         for product in product_list:
             self.get_product_info(product)
 
-    def wrapper_get_prod(self, page_url):
+    def get_products_wrapper(self, page_url):
         """wrapper function that gets contents of a given url and gets products from that url
 
         Args:
@@ -395,13 +393,14 @@ class Scraper(object):
         """generates json file from list of products found in the whole search
         """
 
-        data = []
+        products_json_list = []
         # generate random file name
         filename = str(uuid.uuid4()) + '.json'
         # every object gets converted into json format
         for obj in self.product_obj_list:
-            data.append(obj.to_json())
-        data = ','.join(data)
+            products_json_list.append(obj.to_json())
+
+        products_json_list = ','.join(products_json_list)
         string_data = '[' + data + ']'
         with open('./' + filename, mode='w') as f:
             f.write(string_data)
@@ -419,8 +418,10 @@ class Scraper(object):
             return
 
         self.page_count = self.get_page_count(page_content)
-        # if page count is 1, then there is no need to prepare page list therefore the condition and
-        # we just parse the content recieved above
+
+        """if page count is 1, then there is no need to prepare page list therefore the condition and
+        we just parse the content recieved above
+        """
         if self.page_count <= 1:
             self.get_products(page_content)
 
@@ -430,7 +431,7 @@ class Scraper(object):
             # creating threads at each page in page_list
             with ThreadPoolExecutor() as executor:
                 for page in self.page_list:
-                    executor.submit(self.wrapper_get_prod, page)
+                    executor.submit(self.get_products_wrapper, page)
 
         # generate a json output file
         self.generate_output_file()
