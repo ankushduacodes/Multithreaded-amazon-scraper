@@ -8,9 +8,9 @@ import sys
 import time
 import uuid
 import requests
-from product import Product
-from urllib.parse import urljoin
+from .product import Product
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor
 
 

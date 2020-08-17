@@ -1,4 +1,4 @@
 #__init__.py file
 
-from scraper import *
-from product import *
+from .scraper import *
+from .product import *
