@@ -65,15 +65,15 @@ class Scraper(object):
             requests.HTTPError: Raised when response stattus code is not 200
 
         Returns:
-            response: Whatever response was sent back by the server
+            response or None: returns whatever response was sent back by the server or returns None if requests.exceptions.ConnectionError occurs
         """
         try:
             response = self.session.get(url, headers=self.headers)
 
-        # sys.exit() function kills particular thread in which the connection error occured
+        #  returns None if requests.exceptions.ConnectionError occurs
         except requests.exceptions.ConnectionError as e:
-            print(e)
-            sys.exit()
+            print(e + "while connecting to" + url)
+            return None
 
         if response.status_code != 200:
             raise requests.HTTPError(
@@ -109,7 +109,7 @@ class Scraper(object):
             ValueError: raised if no valid page is found
 
         Returns:
-            response.text: returns html response encoded in unicode
+            response.text or None: returns html response encoded in unicode or returns None if get_requests function returns None
         """
 
         valid_page = True
@@ -119,6 +119,10 @@ class Scraper(object):
         while (trial < max_retries):
 
             response = self.get_request(search_url)
+
+            if (not response):
+                return None
+
             valid_page = self.check_page_validity(response.text)
 
             if valid_page:
@@ -382,6 +386,9 @@ class Scraper(object):
         """
 
         page_content = self.get_page_content(page_url)
+        if (not page_content):
+            return
+
         self.get_products(page_content)
 
     def generate_output_file(self):
@@ -408,6 +415,8 @@ class Scraper(object):
 
         search_url = self.prepare_url(search_word)
         page_content = self.get_page_content(search_url)
+        if (not page_content):
+            return
 
         self.page_count = self.get_page_count(page_content)
         # if page count is 1, then there is no need to prepare page list therefore the condition and
