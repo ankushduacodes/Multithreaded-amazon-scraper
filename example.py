@@ -1,6 +1,6 @@
 import time
 import argparse
-from amazon_scraper_module.scraper import Scraper
+from amazon_scraper.scraper import Scraper
 
 
 def main():
