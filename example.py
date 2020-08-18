@@ -12,13 +12,13 @@ def main():
     parser.add_argument(
         '-w',
         '--word',
-        nargs='?',
+        nargs='*',
         default='smart phone',
         help='Enter the word you want to search'
     )
 
     arg = parser.parse_args()
-
+    arg.word = ' '.join(arg.word)
     amazon = Scraper()
     amazon.search(arg.word)
 
