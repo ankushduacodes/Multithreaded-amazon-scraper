@@ -25,20 +25,6 @@ python3 example.py -w <word you want to search>
 python3 example.py --help
 ```
 
-### Attributes of the `Product` object
-
-Attribute name      | Description
-------------------- | ---------------------------------------
-url                 | Product URL
-title               | Product title
-price               | Product price
-rating              | Rating of the products
-review_count        | Number of customer reviews
-img_url             | Image URL
-bestseller          | Tells whether a product is best seller or not
-prime               | Tells if product is supported by Amazon prime or not
-asin                | Product ASIN ([Amazon Standard Identification Number](https://fr.wikipedia.org/wiki/Amazon_Standard_Identification_Number))
-
 ### Output Format
 Output is provided in the from of a json file, please refer to the [products.json](https://github.com/ankushduacodes/amazon-search-scraper/blob/master/products.json) as an example file which was produced with search word 'toaster'
 
