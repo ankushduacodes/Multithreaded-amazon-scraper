@@ -25,7 +25,7 @@ python3 example.py -w <word you want to search>
 python3 example.py --help
 ```
 
-### Attributes of the `Product` information fetched
+### Information fetched
 
 Attribute name      | Description
 ------------------- | ---------------------------------------
