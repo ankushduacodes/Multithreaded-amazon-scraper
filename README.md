@@ -67,3 +67,4 @@ Number of pages     | Number of products | Time              |
 - [ ] Implement functionality of sending requests from various differnt proxies
 - [ ] Items like Books and DVDs may have multiple prices, Extact all the prices and categorize them into a price dictionary
 - [ ] Add a better way to convert list of objects into json
+- [ ] To handle special characters in the content scraped from Amazon
