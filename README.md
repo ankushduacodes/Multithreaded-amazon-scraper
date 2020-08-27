@@ -1,4 +1,4 @@
-# amazon-search-scraper
+# Multithreaded-amazon-scraper
 
 # Description
 This package allows you to search and scrape for products on [Amazon](https://www.amazon.com) and extract some useful information (price, ratings, number of comments).
