@@ -17,7 +17,7 @@ from .product import Product
 base_url = "https://www.amazon.com"
 
 
-class Scraper(object):
+class Scraper():
     """Does the requests with the Amazon servers
     """
 
