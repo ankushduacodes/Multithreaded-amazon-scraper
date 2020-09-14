@@ -1,6 +1,6 @@
 import json
 
-class Product(object):
+class Product():
     """ Hold information about object of type Product
     """
     def __init__(self, url='', asin='', title='', price=None, img_url='', rating_stars='', review_count=None, bestseller=False, prime=False):
