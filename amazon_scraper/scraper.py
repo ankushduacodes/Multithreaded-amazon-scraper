@@ -4,7 +4,6 @@ Module to get and parse the product info on Amazon Search
 """
 
 import re
-import sys
 import time
 import uuid
 import requests
