@@ -18,13 +18,15 @@ def main():
     )
 
     arg = parser.parse_args()
-    arg.word = ' '.join(arg.word)
+    arg.word = ''.join(arg.word)
     amazon = Scraper()
     amazon.search(arg.word)
 
 
 if __name__ == "__main__":
+    print("Extracting...")
     start = time.perf_counter()
     main()
     stop = time.perf_counter()
-    print(stop - start)
+    print("Finished Extracting...")
+    print(f"The extraction took {stop - start}")
